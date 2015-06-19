@@ -1,0 +1,18 @@
+{#
+This file is part of the CampaignChain package.
+
+(c) Sandro Groganz <sandro@campaignchain.com>
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+
+{% extends 'CampaignChainCoreBundle:Base:base.html.twig' %}
+
+{% block body %}
+     <div class="jumbotron">
+         <p>Connect to the respective SlideShare account by logging in to SlideShare. Your username and password will be stored in this application.</p>
+         <p><a class="btn btn-primary btn-lg" role="button" href="{{ path('campaignchain_channel_slideshare_new') }}">Connect with SlideShare</a></p>
+     </div>
+
+ {% endblock %}

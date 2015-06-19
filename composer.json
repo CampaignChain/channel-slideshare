@@ -1,0 +1,33 @@
+{
+    "name": "campaignchain/channel-slideshare",
+    "description": "Connect to SlideShare",
+    "type": "campaignchain-channel",
+    "license": "Apache-2.0",
+    "homepage": "http://campaignchain.com",
+    "authors": [
+        {
+            "name": "Sandro Groganz",
+            "email": "sandro@campaignchain.com"
+        }
+    ],
+    "require": {
+    },
+    "autoload": {
+        "psr-4": { "CampaignChain\\Channel\\SlideShareBundle\\": "" }
+    },
+    "extra": {
+        "campaignchain": {
+            "kernel": {
+                "classes": [
+                    "CampaignChain\\Channel\\SlideShareBundle\\CampaignChainChannelSlideShareBundle"
+                ],
+                "routing":
+                {
+                    "name": "campaignchain_channel_slideshare",
+                    "resource": "@CampaignChainChannelSlideShareBundle/Resources/config/routing.yml",
+                    "prefix": "/"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,8 @@
+
+modules:
+    campaignchain-slideshare:
+        display_name: SlideShare
+        description: Connect to SlideShare
+        routes: 
+            new: campaignchain_channel_slideshare_create
+        hooks:
