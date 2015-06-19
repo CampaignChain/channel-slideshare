@@ -124,19 +124,7 @@ class SlideShareClient
         $query->set('hash', sha1($this->appSecret.$ts));
         $query->set('username', $this->username);
         $query->set('password', $this->password);
-        print_r($request); die;
         return $request->send()->xml();
     }    
     
-    public function getWebinar($webinarKey)
-    {
-        $request = $this->client->get('G2W/rest/organizers/'.$this->organizerKey.'/webinars/'.$webinarKey);
-        return $request->send()->json();
-    }
-
-    public function getWebinarSessions($webinarKey)
-    {
-        $request = $this->client->get('G2W/rest/organizers/'.$this->organizerKey.'/webinars/'.$webinarKey.'/sessions');
-        return $request->send()->json();
-    }
 }
