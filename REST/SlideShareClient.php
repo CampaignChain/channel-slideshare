@@ -44,11 +44,11 @@ class SlideShareClient
     
     }
     
-    public function connectByLocation($location){        
+    public function connectByLocation($location){  
         $app = $this->container->get('campaignchain.security.authentication.client.oauth.application');
-        $application = $app->getApplication(self::RESOURCE_OWNER);
-        
-        return $this->connect($application->getKey(), $application->getSecret(), $location->getIdentifier(), $location->getPassword());
+        $application = $app->getApplication(self::RESOURCE_OWNER);       
+        $slideshareLocation = $this->container->get('doctrine')->getRepository('CampaignChainLocationSlideShareBundle:SlideShareUser')->findOneByLocation($location);
+        return $this->connect($application->getKey(), $application->getSecret(), $slideshareLocation->getIdentifier(), $slideshareLocation->getPassword());
     }
 
     public function connect($appKey, $appSecret, $username, $password){
@@ -126,5 +126,23 @@ class SlideShareClient
         $query->set('password', $this->password);
         return $request->send()->xml();
     }    
+    
+    public function getUserSlideshows($for = null)
+    {
+        $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/get_slideshows_by_user');
+        $query = $request->getQuery();
+        $ts = time();
+        if (is_null($for)) { 
+            $for = $this->username; 
+        }
+        $query->set('api_key', $this->appKey);
+        $query->set('ts', $ts);
+        $query->set('hash', sha1($this->appSecret.$ts));
+        $query->set('username_for', $for);
+        $query->set('detailed', '1');
+        $query->set('username', $this->username);
+        $query->set('password', $this->password);
+        return $request->send()->xml();
+    }      
     
 }
