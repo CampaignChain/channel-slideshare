@@ -1,6 +1,7 @@
 {
     "name": "campaignchain/channel-slideshare",
     "description": "Connect to SlideShare",
+    "keywords": ["slideshare","campaignchain"],
     "type": "campaignchain-channel",
     "license": "Apache-2.0",
     "homepage": "http://campaignchain.com",
