@@ -82,25 +82,6 @@ class SlideShareClient
     }
 
     
-/*
-                $oauthApp = $this->get('campaignchain.security.authentication.client.oauth.application');
-                $application = $oauthApp->getApplication(self::RESOURCE_OWNER);
-                $ts = time();
-                $client = new \Guzzle\Http\Client;
-                $request = $client->createRequest('GET', 'https://www.slideshare.net/api/2/get_user_tags');
-                $query = $request->getQuery();
-                $query->set('api_key', $application->getKey());
-                $query->set('ts',  $ts);
-                $query->set('hash', sha1($application->getSecret().$ts));
-                $query->set('username', $locationUsername);
-                $query->set('password', $locationPassword);
-                $response = $request->send();
-                
-                $xml = $response->xml();
-                if (isset($xml->Message) && strtolower($xml->Message) == 'failed user authentication') {
-                  throw new \Exception('The credentials provided are invalid');
-                }
-*/                
     public function getSlideshowByUrl($url)
     {
         $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/get_slideshow');
@@ -111,9 +92,24 @@ class SlideShareClient
         $query->set('hash', sha1($this->appSecret.$ts));
         $query->set('username', $this->username);
         $query->set('password', $this->password);
+        $query->set('slideshow_url', $url);
         return $request->send()->xml();
     }
 
+    public function getSlideshowById($id)
+    {
+        $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/get_slideshow');
+        $query = $request->getQuery();
+        $ts = time();
+        $query->set('api_key', $this->appKey);
+        $query->set('ts',  $ts);
+        $query->set('hash', sha1($this->appSecret.$ts));
+        $query->set('username', $this->username);
+        $query->set('password', $this->password);
+        $query->set('slideshow_id', $id);
+        return $request->send()->xml();
+    }
+    
     public function getUserTags()
     {
         $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/get_user_tags');
