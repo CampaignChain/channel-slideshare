@@ -107,6 +107,8 @@ class SlideShareClient
         $query->set('username', $this->username);
         $query->set('password', $this->password);
         $query->set('slideshow_id', $id);
+        $query->set('detailed', '1');
+        $query->set('exclude_tags', '1');
         return $request->send()->xml();
     }
     
@@ -139,7 +141,24 @@ class SlideShareClient
         $query->set('username', $this->username);
         $query->set('password', $this->password);
         return $request->send()->xml();
-    }     
+    }
+
+    public function allowEmbedsUserSlideshow($id)
+    {
+        $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/edit_slideshow');
+        $query = $request->getQuery();
+        $ts = time();
+        $query->set('api_key', $this->appKey);
+        $query->set('ts', $ts);
+        $query->set('hash', sha1($this->appSecret.$ts));
+        $query->set('username_for', $this->username);
+        $query->set('slideshow_id', $id);
+        $query->set('make_slideshow_private', 'Y');
+        $query->set('allow_embeds', 'Y');
+        $query->set('username', $this->username);
+        $query->set('password', $this->password);
+        return $request->send()->xml();
+    }
 
     public function publishUserSlideshow($id)
     {
