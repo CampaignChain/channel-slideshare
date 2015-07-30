@@ -1,2 +1,3 @@
-# channel-slideshare
+channel-slideshare
+===================
 Connect to SlideShare
