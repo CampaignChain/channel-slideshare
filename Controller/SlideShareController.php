@@ -107,6 +107,15 @@ class SlideShareController extends Controller
                 $location->setLocationModule($locationModule);
                 $location->setName($locationUsername);
                 $location->setUrl($locationURL);
+                /*
+                 * If user uploaded an image, use that as the Location image,
+                 * otherwise, take the SlideShare default profile image.
+                 */
+                $slideShareUserImage = 'http://cdn.slidesharecdn.com/profile-photo-'.$locationUsername.'-96x96.jpg';
+                if(!is_array(getimagesize($slideShareUserImage))){
+                    $slideShareUserImage = 'http://public.slidesharecdn.com/b/images/user-96x96.png';
+                }
+                $location->setImage($slideShareUserImage);
                 $wizard = $this->get('campaignchain.core.channel.wizard');
                 $wizard->setName($location->getName());
                 $wizard->addLocation($location->getUrl(), $location);
