@@ -112,7 +112,9 @@ class SlideShareController extends Controller
                  * otherwise, take the SlideShare default profile image.
                  */
                 $slideShareUserImage = 'http://cdn.slidesharecdn.com/profile-photo-'.$locationUsername.'-96x96.jpg';
-                if(!is_array(getimagesize($slideShareUserImage))){
+                try {
+                    getimagesize($slideShareUserImage);
+                } catch (\Exception $e) {
                     $slideShareUserImage = 'http://public.slidesharecdn.com/b/images/user-96x96.png';
                 }
                 $location->setImage($slideShareUserImage);
