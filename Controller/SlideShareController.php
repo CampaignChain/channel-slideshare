@@ -65,8 +65,8 @@ class SlideShareController extends Controller
         $form->handleRequest($request);
         try {
             if ($form->isValid()) {
-                $repository = $this->getDoctrine()->getManager();
-                $repository->getConnection()->beginTransaction();
+                $em = $this->getDoctrine()->getManager();
+                $em->getConnection()->beginTransaction();
                 
                 $locationUsername = $form->getData()['username'];
                 $locationPassword = $form->getData()['password'];
@@ -129,9 +129,9 @@ class SlideShareController extends Controller
                 $slideshareUser->setIdentifier($locationUsername);
                 $slideshareUser->setPassword($locationPassword);
                 $slideshareUser->setDisplayName($locationUsername);
-                $repository->persist($slideshareUser);
-                $repository->flush();
-                $repository->getConnection()->commit();
+                $em->persist($slideshareUser);
+                $em->flush();
+                $em->getConnection()->commit();
                 $this->get('session')->getFlashBag()->add(
                     'success',
                     'The Slideshare location <a href="#">'.$locationUsername.'</a> was connected successfully.'
@@ -140,7 +140,7 @@ class SlideShareController extends Controller
                     'campaignchain_core_channel'));
             }
         } catch (\Exception $e) {
-            $repository->getConnection()->rollback();
+            $em->getConnection()->rollback();
             throw $e;
         }
         return $this->render(
