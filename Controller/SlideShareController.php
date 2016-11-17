@@ -144,7 +144,7 @@ class SlideShareController extends Controller
                     'The Slideshare location <a href="#">'.$locationUsername.'</a> was connected successfully.'
                 );            
                 return $this->redirect($this->generateUrl(
-                    'campaignchain_core_channel'));
+                    'campaignchain_core_location'));
             }
         } catch (\Exception $e) {
             $em->getConnection()->rollback();
