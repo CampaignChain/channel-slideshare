@@ -69,7 +69,7 @@ class SlideShareClient
 
             return $this;
         } catch (\Exception $e) {
-            throw new ExternalApiException($e->getMessage(), $e->getCode());
+            throw new ExternalApiException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
@@ -95,7 +95,7 @@ class SlideShareClient
             }
             return $xml;
         } catch(\Exception $e){
-            throw new ExternalApiException($e->getMessage(), $e->getCode());
+            throw new ExternalApiException($e->getMessage(), $e->getCode(), $e);
         }
     }
 
