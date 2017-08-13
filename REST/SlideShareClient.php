@@ -10,9 +10,9 @@
 
 namespace CampaignChain\Channel\SlideShareBundle\REST;
 
+use CampaignChain\CoreBundle\Exception\ExternalApiException;
+use GuzzleHttp\Client;
 use Symfony\Component\HttpFoundation\Session\Session;
-use Guzzle\Http\Client;
-
 
 class SlideShareClient
 {
@@ -21,11 +21,12 @@ class SlideShareClient
 
     protected $container;
 
+    /** @var  Client */
     protected $client;
 
-    protected $apiKey;
+    protected $appKey;
     
-    protected $apiSecret;
+    protected $appSecret;
 
     protected $username;
     
@@ -51,129 +52,121 @@ class SlideShareClient
         return $this->connect($application->getKey(), $application->getSecret(), $slideshareLocation->getIdentifier(), $slideshareLocation->getPassword());
     }
 
-    public function connect($appKey, $appSecret, $username, $password){
-        $this->username = $username;        
+    public function connect($appKey, $appSecret, $username, $password)
+    {
+        $this->username = $username;
         $this->password = $password;
         $this->appKey = $appKey;
         $this->appSecret = $appSecret;
-        try {
-            $this->client = new Client(self::BASE_URL);
-            return $this;
-        }
-        catch (ClientErrorResponseException $e) {
-            $req = $e->getRequest();
-            $resp =$e->getResponse();
-            print_r($resp);
-        }
-        catch (ServerErrorResponseException $e) {
 
-            $req = $e->getRequest();
-            $resp =$e->getResponse();
-            print_r($resp);
-        }
-        catch (BadResponseException $e) {
-            $req = $e->getRequest();
-            $resp =$e->getResponse();
-            print_r($resp);
-        }
-        catch(Exception $e){
-            print_r($e->getMessage());
+        try {
+            $this->client = new Client([
+                'base_uri' => self::BASE_URL,
+                'headers' => [
+                    'Content-Type' => 'text/xml; charset=UTF8',
+                ],
+            ]);
+
+            return $this;
+        } catch (\Exception $e) {
+            throw new ExternalApiException($e->getMessage(), $e->getCode());
         }
     }
 
-    
+    private function request($method, $uri, $body = array())
+    {
+        $authQuery = array();
+        $ts = time();
+        $authQuery['api_key']   = $this->appKey;
+        $authQuery['ts']        = $ts;
+        $authQuery['hash']      = sha1($this->appSecret.$ts);
+        $authQuery['username']  = trim($this->username);
+        $authQuery['password']  = trim($this->password);
+
+        if(isset($body['query'])){
+            $body['query'] = array_merge($body['query'], $authQuery);
+        }
+
+        try {
+            $res = $this->client->request($method, $uri, $body);
+            $xml = simplexml_load_string($res->getBody()->getContents());
+            if(isset($xml->Message) && $xml->Message == 'Failed User authentication'){
+                throw new ExternalApiException($xml->Message);
+            }
+            return $xml;
+        } catch(\Exception $e){
+            throw new ExternalApiException($e->getMessage(), $e->getCode());
+        }
+    }
+
     public function getSlideshowByUrl($url)
     {
-        $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/get_slideshow');
-        $query = $request->getQuery();
-        $ts = time();
-        $query->set('api_key', $this->appKey);
-        $query->set('ts',  $ts);
-        $query->set('hash', sha1($this->appSecret.$ts));
-        $query->set('username', $this->username);
-        $query->set('password', $this->password);
-        $query->set('slideshow_url', $url);
-        return $request->send()->xml();
+        return $this->request(
+            'GET',
+            'https://www.slideshare.net/api/2/get_slideshow',
+            array('query' => array(
+                'slideshow_url' => $url,
+            ))
+        );
     }
 
     public function getSlideshowById($id)
     {
-        $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/get_slideshow');
-        $query = $request->getQuery();
-        $ts = time();
-        $query->set('api_key', $this->appKey);
-        $query->set('ts',  $ts);
-        $query->set('hash', sha1($this->appSecret.$ts));
-        $query->set('username', $this->username);
-        $query->set('password', $this->password);
-        $query->set('slideshow_id', $id);
-        $query->set('detailed', '1');
-        $query->set('exclude_tags', '1');
-        return $request->send()->xml();
+        return $this->request(
+            'GET',
+            'https://www.slideshare.net/api/2/get_slideshow',
+            array('query' => array(
+                'slideshow_id' => $id,
+                'detailed' => '1',
+                'exclude_tags' => '1',
+            ))
+        );
     }
     
     public function getUserTags()
     {
-        $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/get_user_tags');
-        $query = $request->getQuery();
-        $ts = time();
-        $query->set('api_key', $this->appKey);
-        $query->set('ts', $ts);
-        $query->set('hash', sha1($this->appSecret.$ts));
-        $query->set('username', $this->username);
-        $query->set('password', $this->password);
-        return $request->send()->xml();
-    }    
+        return $this->request('GET', 'https://www.slideshare.net/api/2/get_user_tags');
+    }
     
     public function getUserSlideshows($for = null)
     {
-        $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/get_slideshows_by_user');
-        $query = $request->getQuery();
-        $ts = time();
-        if (is_null($for)) { 
-            $for = $this->username; 
+        if (is_null($for)) {
+            $for = $this->username;
         }
-        $query->set('api_key', $this->appKey);
-        $query->set('ts', $ts);
-        $query->set('hash', sha1($this->appSecret.$ts));
-        $query->set('username_for', $for);
-        $query->set('detailed', '1');
-        $query->set('username', $this->username);
-        $query->set('password', $this->password);
-        return $request->send()->xml();
+
+        return $this->request(
+            'GET',
+            'https://www.slideshare.net/api/2/get_slideshows_by_user',
+            array('query' => array(
+                'username_for' => $for,
+                'detailed' => '1',
+            ))
+        );
     }
 
     public function allowEmbedsUserSlideshow($id)
     {
-        $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/edit_slideshow');
-        $query = $request->getQuery();
-        $ts = time();
-        $query->set('api_key', $this->appKey);
-        $query->set('ts', $ts);
-        $query->set('hash', sha1($this->appSecret.$ts));
-        $query->set('username_for', $this->username);
-        $query->set('slideshow_id', $id);
-        $query->set('make_slideshow_private', 'Y');
-        $query->set('allow_embeds', 'Y');
-        $query->set('username', $this->username);
-        $query->set('password', $this->password);
-        return $request->send()->xml();
+        return $this->request('GET', 'https://www.slideshare.net/api/2/edit_slideshow',
+            array('query' => array(
+                'username_for' => $this->username,
+                'slideshow_id' => $id,
+                'make_slideshow_private' => 'Y',
+                'allow_embeds' => 'Y',
+            ))
+        );
     }
 
     public function publishUserSlideshow($id)
     {
-        $request = $this->client->createRequest('GET', 'https://www.slideshare.net/api/2/edit_slideshow');
-        $query = $request->getQuery();
-        $ts = time();
-        $query->set('api_key', $this->appKey);
-        $query->set('ts', $ts);
-        $query->set('hash', sha1($this->appSecret.$ts));
-        $query->set('username_for', $this->username);
-        $query->set('slideshow_id', $id);
-        $query->set('make_slideshow_private', 'N');
-        $query->set('username', $this->username);
-        $query->set('password', $this->password);
-        return $request->send()->xml();
+        return $this->request(
+            'GET',
+            'https://www.slideshare.net/api/2/edit_slideshow',
+            array('query' => array(
+                'username_for' => $this->username,
+                'slideshow_id' => $id,
+                'make_slideshow_private' => 'N',
+            ))
+        );
     }        
     
 }

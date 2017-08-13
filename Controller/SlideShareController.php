@@ -75,8 +75,8 @@ class SlideShareController extends Controller
                 $em = $this->getDoctrine()->getManager();
                 $em->getConnection()->beginTransaction();
                 
-                $locationUsername = $form->getData()['username'];
-                $locationPassword = $form->getData()['password'];
+                $locationUsername = trim($form->getData()['username']);
+                $locationPassword = trim($form->getData()['password']);
                 
                 /*
                 $oauthApp = $this->get('campaignchain.security.authentication.client.oauth.application');
