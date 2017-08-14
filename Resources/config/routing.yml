@@ -13,10 +13,10 @@
 # limitations under the License.
 
 campaignchain_channel_slideshare_create:
-    pattern: /channel/slideshare/create
+    path: /channel/slideshare/create
     defaults: { _controller: CampaignChainChannelSlideShareBundle:SlideShare:create }
 
 campaignchain_channel_slideshare_new:
-    pattern: /channel/slideshare/new
+    path: /channel/slideshare/new
     defaults: { _controller: CampaignChainChannelSlideShareBundle:SlideShare:new }
     
